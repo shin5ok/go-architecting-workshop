@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package main
+package datastore
 
 import (
 	"context"
@@ -31,28 +31,28 @@ import (
 )
 
 type GameUserOperation interface {
-	createUser(context.Context, io.Writer, userParams) error
-	addItemToUser(context.Context, io.Writer, userParams, itemParams) error
-	userItems(context.Context, io.Writer, string) ([]map[string]interface{}, error)
+	CreateUser(context.Context, io.Writer, UserParams) error
+	AddItemToUser(context.Context, io.Writer, UserParams, ItemParams) error
+	UserItems(context.Context, io.Writer, string) ([]map[string]interface{}, error)
 }
 
-type userParams struct {
-	userID   string
-	userName string
+type UserParams struct {
+	UserID   string
+	UserName string
 }
 
-type itemParams struct {
-	itemID string
+type ItemParams struct {
+	ItemID string
 }
 
 type dbClient struct {
-	sc    *spanner.Client
-	cache *redis.Client
+	Sc    *spanner.Client
+	Cache *redis.Client
 }
 
 var baseItemSliceCap = 100
 
-func newClient(ctx context.Context, dbString string, redisClient *redis.Client) (dbClient, error) {
+func NewClient(ctx context.Context, dbString string, redisClient *redis.Client) (dbClient, error) {
 
 	client, err := spanner.NewClient(ctx, dbString)
 	if err != nil {
@@ -60,24 +60,24 @@ func newClient(ctx context.Context, dbString string, redisClient *redis.Client) 
 	}
 
 	return dbClient{
-		sc:    client,
-		cache: redisClient,
+		Sc:    client,
+		Cache: redisClient,
 	}, nil
 }
 
 // create a user
-func (d dbClient) createUser(ctx context.Context, w io.Writer, u userParams) error {
+func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) error {
 
 	ctx, span := otel.Tracer("main").Start(ctx, "createUser")
 	defer span.End()
 
-	_, err := d.sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+	_, err := d.Sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 		sqlToUsers := `INSERT users (user_id, name, created_at, updated_at)
 		  VALUES (@userID, @userName, @timestamp, @timestamp)`
 		t := time.Now().Format("2006-01-02 15:04:05")
 		params := map[string]interface{}{
-			"userID":    u.userID,
-			"userName":  u.userName,
+			"userID":    u.UserID,
+			"userName":  u.UserName,
 			"timestamp": t,
 		}
 		stmtToUsers := spanner.Statement{
@@ -96,19 +96,19 @@ func (d dbClient) createUser(ctx context.Context, w io.Writer, u userParams) err
 }
 
 // add item specified item_id to specific user
-func (d dbClient) addItemToUser(ctx context.Context, w io.Writer, u userParams, i itemParams) error {
+func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, i ItemParams) error {
 
 	ctx, span := otel.Tracer("main").Start(ctx, "addItemUser")
 	defer span.End()
 
-	_, err := d.sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+	_, err := d.Sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 
 		sqlToUsers := `INSERT user_items (user_id, item_id, created_at, updated_at)
 		  VALUES (@userID, @itemID, @timestamp, @timestamp)`
 		t := time.Now().Format("2006-01-02 15:04:05")
 		params := map[string]interface{}{
-			"userID":    u.userID,
-			"itemId":    i.itemID,
+			"userID":    u.UserID,
+			"itemId":    i.ItemID,
 			"timestamp": t,
 		}
 		stmtToUsers := spanner.Statement{
@@ -126,13 +126,13 @@ func (d dbClient) addItemToUser(ctx context.Context, w io.Writer, u userParams, 
 }
 
 // get items the user has
-func (d dbClient) userItems(ctx context.Context, w io.Writer, userID string) ([]map[string]interface{}, error) {
+func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]map[string]interface{}, error) {
 
 	ctx, span := otel.Tracer("main").Start(ctx, "userItems")
 	defer span.End()
 
 	key := fmt.Sprintf("userItems_%s", userID)
-	data, err := d.cache.Get(key).Result()
+	data, err := d.Cache.Get(key).Result()
 
 	if err != nil {
 		log.Println(key, "Error", err)
@@ -146,7 +146,7 @@ func (d dbClient) userItems(ctx context.Context, w io.Writer, userID string) ([]
 		return results, nil
 	}
 
-	txn := d.sc.ReadOnlyTransaction()
+	txn := d.Sc.ReadOnlyTransaction()
 	defer txn.Close()
 	sql := `select users.name,items.item_name,user_items.item_id
 		from user_items join items on items.item_id = user_items.item_id join users on users.user_id = user_items.user_id
@@ -187,7 +187,7 @@ func (d dbClient) userItems(ctx context.Context, w io.Writer, userID string) ([]
 	}
 
 	jsonedResults, _ := json.Marshal(results)
-	err = d.cache.Set(key, string(jsonedResults), 10*time.Second).Err()
+	err = d.Cache.Set(key, string(jsonedResults), 10*time.Second).Err()
 	if err != nil {
 		log.Println(err)
 	}

@@ -36,7 +36,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-redis/redis"
 	gonanoid "github.com/matoous/go-nanoid"
-	"github.com/shin5ok/egg-architecting/testutil"
+	db "github.com/shin5ok/go-architecting-workshop"
+	"github.com/shin5ok/go-architecting-workshop/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -80,7 +81,7 @@ func init() {
 		DialTimeout: 1 * time.Second,
 	})
 
-	client, err := newClient(ctx, spannerString, rdb)
+	client, err := db.NewClient(ctx, spannerString, rdb)
 	if err != nil {
 		log.Fatal(err)
 	}

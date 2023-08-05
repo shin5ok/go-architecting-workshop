@@ -35,6 +35,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+
+	db "github.com/shin5ok/go-architecting-workshop"
 )
 
 var (
@@ -53,7 +55,7 @@ var (
 )
 
 type Serving struct {
-	Client GameUserOperation
+	Client db.GameUserOperation
 }
 
 type User struct {
@@ -97,12 +99,12 @@ func main() {
 		DialTimeout: 1 * time.Second,
 	})
 
-	client, err := newClient(ctx, spannerString, rdb)
+	client, err := db.NewClient(ctx, spannerString, rdb)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer client.sc.Close()
+	defer client.Sc.Close()
 	defer rdb.Close()
 
 	s := Serving{
@@ -160,7 +162,7 @@ func (s Serving) getUserItems(w http.ResponseWriter, r *http.Request) {
 	trace := fmt.Sprintf("projects/%s/traces/%s", projectId, span.SpanContext().TraceID().String())
 	oplog.Info().Str("trace", trace).Str("spanId", span.SpanContext().SpanID().String()).Msg("test")
 
-	results, err := s.Client.userItems(ctx, w, userID)
+	results, err := s.Client.UserItems(ctx, w, userID)
 	if err != nil {
 		errorRender(w, r, http.StatusInternalServerError, err)
 		return
@@ -184,7 +186,7 @@ func (s Serving) createUser(w http.ResponseWriter, r *http.Request) {
 	span.SetAttributes(attribute.String("server", "createUser"))
 	defer span.End()
 
-	err := s.Client.createUser(ctx, w, userParams{userID: userId.String(), userName: userName})
+	err := s.Client.CreateUser(ctx, w, db.UserParams{UserID: userId.String(), UserName: userName})
 	if err != nil {
 		errorRender(w, r, http.StatusInternalServerError, err)
 		return
@@ -204,7 +206,7 @@ func (s Serving) addItemToUser(w http.ResponseWriter, r *http.Request) {
 	span.SetAttributes(attribute.String("server", "addItemToUser"))
 	defer span.End()
 
-	err := s.Client.addItemToUser(ctx, w, userParams{userID: userID}, itemParams{itemID: itemID})
+	err := s.Client.AddItemToUser(ctx, w, db.UserParams{UserID: userID}, db.ItemParams{ItemID: itemID})
 	if err != nil {
 		errorRender(w, r, http.StatusInternalServerError, err)
 		return
