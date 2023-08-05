@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package datastore
+package gameexample
 
 import (
 	"context"
@@ -68,7 +68,7 @@ func NewClient(ctx context.Context, dbString string, redisClient *redis.Client) 
 // create a user
 func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) error {
 
-	ctx, span := otel.Tracer("main").Start(ctx, "createUser")
+	ctx, span := otel.Tracer("main").Start(ctx, "CreateUser")
 	defer span.End()
 
 	_, err := d.Sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
@@ -98,7 +98,7 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 // add item specified item_id to specific user
 func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, i ItemParams) error {
 
-	ctx, span := otel.Tracer("main").Start(ctx, "addItemUser")
+	ctx, span := otel.Tracer("main").Start(ctx, "AddItemUser")
 	defer span.End()
 
 	_, err := d.Sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
@@ -128,10 +128,10 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 // get items the user has
 func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]map[string]interface{}, error) {
 
-	ctx, span := otel.Tracer("main").Start(ctx, "userItems")
+	ctx, span := otel.Tracer("main").Start(ctx, "UserItems")
 	defer span.End()
 
-	key := fmt.Sprintf("userItems_%s", userID)
+	key := fmt.Sprintf("UserItems_%s", userID)
 	data, err := d.Cache.Get(key).Result()
 
 	if err != nil {
