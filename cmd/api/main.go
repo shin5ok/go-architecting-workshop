@@ -36,7 +36,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
-	db "github.com/shin5ok/go-architecting-workshop"
+	game "github.com/shin5ok/go-architecting-workshop"
 )
 
 var (
@@ -55,7 +55,7 @@ var (
 )
 
 type Serving struct {
-	Client db.GameUserOperation
+	Client game.GameUserOperation
 }
 
 type User struct {
@@ -99,7 +99,7 @@ func main() {
 		DialTimeout: 1 * time.Second,
 	})
 
-	client, err := db.NewClient(ctx, spannerString, rdb)
+	client, err := game.NewClient(ctx, spannerString, rdb)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -186,7 +186,7 @@ func (s Serving) createUser(w http.ResponseWriter, r *http.Request) {
 	span.SetAttributes(attribute.String("server", "createUser"))
 	defer span.End()
 
-	err := s.Client.CreateUser(ctx, w, db.UserParams{UserID: userId.String(), UserName: userName})
+	err := s.Client.CreateUser(ctx, w, game.UserParams{UserID: userId.String(), UserName: userName})
 	if err != nil {
 		errorRender(w, r, http.StatusInternalServerError, err)
 		return
@@ -206,7 +206,7 @@ func (s Serving) addItemToUser(w http.ResponseWriter, r *http.Request) {
 	span.SetAttributes(attribute.String("server", "addItemToUser"))
 	defer span.End()
 
-	err := s.Client.AddItemToUser(ctx, w, db.UserParams{UserID: userID}, db.ItemParams{ItemID: itemID})
+	err := s.Client.AddItemToUser(ctx, w, game.UserParams{UserID: userID}, game.ItemParams{ItemID: itemID})
 	if err != nil {
 		errorRender(w, r, http.StatusInternalServerError, err)
 		return
