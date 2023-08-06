@@ -1,12 +1,14 @@
 FROM golang:1.19 AS builder
 
-WORKDIR /app
+ENV ROOT=/app/src
+WORKDIR $ROOT
 COPY *.go go.mod go.sum ./
 COPY cmd/ ./cmd/
-RUN cd cmd/api; GGO_ENABLED=0 GOOS=linux go build -o /app/main 
-CMD ["/app/main"]
+WORKDIR $ROOT/cmd/api
+RUN GGO_ENABLED=0 GOOS=linux go build -o ./main .
 
-# FROM debian:buster-slim AS runner
-# COPY --from=builder /app/main /main
-# USER nobody
-# CMD ["./main"]
+FROM golang:1.19 AS runner
+WORKDIR /
+COPY --from=builder /app/src/cmd/api/main ./main
+USER nobody
+CMD ["./main"]
