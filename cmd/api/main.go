@@ -33,8 +33,11 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	game "github.com/shin5ok/go-architecting-workshop"
 )
@@ -157,10 +160,8 @@ func (s Serving) getUserItems(w http.ResponseWriter, r *http.Request) {
 	span.SetAttributes(attribute.String("server", "getUserItems"))
 	defer span.End()
 
-	oplog := httplog.LogEntry(ctx)
-	// projects/PROJECT_ID/traces/TRACE_ID
-	trace := fmt.Sprintf("projects/%s/traces/%s", projectId, span.SpanContext().TraceID().String())
-	oplog.Info().Str("trace", trace).Str("spanId", span.SpanContext().SpanID().String()).Msg("test")
+	/* sample log related to span id */
+	traceWithLog(ctx, span).Str("method", "ok").Send()
 
 	results, err := s.Client.UserItems(ctx, w, userID)
 	if err != nil {
@@ -232,4 +233,12 @@ func headerAuth(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func traceWithLog(ctx context.Context, span trace.Span) *zerolog.Event {
+	trace := fmt.Sprintf("projects/%s/traces/%s", projectId, span.SpanContext().TraceID().String())
+	oplog := httplog.LogEntry(ctx)
+	return oplog.Info().
+		Str("logging.googleapis.com/trace", trace).
+		Str("logging.googleapis.com/spanId", span.SpanContext().SpanID().String())
 }
