@@ -128,20 +128,21 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 // get items the user has
 func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]map[string]interface{}, error) {
 
-	ctx, span := otel.Tracer("main").Start(ctx, "UserItems")
-	defer span.End()
-
+	ctx, span := otel.Tracer("main").Start(ctx, "GetCache")
 	key := fmt.Sprintf("UserItems_%s", userID)
 	data, err := d.Cache.Get(key).Result()
+	span.End()
 
 	if err != nil {
 		log.Println(key, "Error", err)
 	} else {
+		_, span := otel.Tracer("main").Start(ctx, "JsonUnmarshal")
 		results := []map[string]interface{}{}
 		err := json.Unmarshal([]byte(data), &results)
 		if err != nil {
 			log.Println(err)
 		}
+		span.End()
 		log.Println(key, "from cache")
 		return results, nil
 	}
@@ -158,9 +159,12 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 		},
 	}
 
+	ctx, span = otel.Tracer("main").Start(ctx, "txnQuery")
 	iter := txn.Query(ctx, stmt)
 	defer iter.Stop()
+	span.End()
 
+	_, span = otel.Tracer("main").Start(ctx, "readResults")
 	results := make([]map[string]interface{}, 0, baseItemSliceCap)
 	for {
 		row, err := iter.Next()
@@ -185,12 +189,15 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 			})
 
 	}
+	span.End()
 
+	_, span = otel.Tracer("main").Start(ctx, "setResults")
 	jsonedResults, _ := json.Marshal(results)
 	err = d.Cache.Set(key, string(jsonedResults), 10*time.Second).Err()
 	if err != nil {
 		log.Println(err)
 	}
+	span.End()
 
 	return results, nil
 }
