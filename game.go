@@ -95,7 +95,10 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 	return err
 }
 
-// add item specified item_id to specific user
+/*
+add item specified item_id to specific user
+additionally show example how to use span of trace
+*/
 func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, i ItemParams) error {
 
 	ctx, span := otel.Tracer("main").Start(ctx, "AddItemUser")
