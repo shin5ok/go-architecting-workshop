@@ -86,11 +86,10 @@ func main() {
 		log.Fatal((err))
 	}
 
-	p, err := pubsub.NewClient(ctx, projectId)
+	pubsubClient, err := pubsub.NewClient(ctx, projectId)
 	if err != nil {
 		log.Fatal(err)
 	}
-	pubsubClient = p
 	defer pubsubClient.Close()
 
 	rdb := redis.NewClient(&redis.Options{
