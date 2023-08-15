@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
+	"github.com/urfave/cli/v2"
 
 	game "github.com/shin5ok/go-architecting-workshop"
 )
@@ -55,20 +56,43 @@ func main() {
 		Client: client,
 	}
 
-	/* Just to test */
-	userId, err := uuid.NewRandom()
-	if err != nil {
-		log.Fatal(err)
+	app := cli.NewApp()
+
+	createUserFlags := []cli.Flag{
+		&cli.StringFlag{
+			Name:  "username",
+			Value: "",
+			Usage: "Give it a user name to be created",
+		},
 	}
-	if len(os.Args) != 2 {
-		log.Fatal("error: invalid number of args")
+
+	app.Commands = []*cli.Command{
+		{
+			Name:  "createuser",
+			Flags: createUserFlags,
+			Action: func(c *cli.Context) error {
+
+				userId, err := uuid.NewRandom()
+				if err != nil {
+					return err
+				}
+
+				userName := c.String("username")
+				userParams := game.UserParams{UserID: userId.String(), UserName: userName}
+				err = s.Client.CreateUser(ctx, os.Stdout, userParams)
+				if err != nil {
+					return err
+				}
+
+				fmt.Printf("%+v is created\n", userParams)
+				return nil
+
+			},
+		},
 	}
-	userName := os.Args[1]
-	userParams := game.UserParams{UserID: userId.String(), UserName: userName}
-	err = s.Client.CreateUser(ctx, os.Stdout, userParams)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(userParams, "is created")
+
+	app.Name = "game-api"
+	app.Usage = `Game operation CLI via REST API`
+	app.Run(os.Args)
 
 }
