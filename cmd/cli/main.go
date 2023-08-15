@@ -66,6 +66,19 @@ func main() {
 		},
 	}
 
+	addItemFlags := []cli.Flag{
+		&cli.StringFlag{
+			Name:  "userid",
+			Value: "",
+			Usage: "Give it a user id to be targeted",
+		},
+		&cli.StringFlag{
+			Name:  "itemid",
+			Value: "",
+			Usage: "item id to be added to the user id",
+		},
+	}
+
 	app.Commands = []*cli.Command{
 		{
 			Name:  "createuser",
@@ -74,6 +87,7 @@ func main() {
 
 				userId, err := uuid.NewRandom()
 				if err != nil {
+					fmt.Println(err)
 					return err
 				}
 
@@ -81,12 +95,33 @@ func main() {
 				userParams := game.UserParams{UserID: userId.String(), UserName: userName}
 				err = s.Client.CreateUser(ctx, os.Stdout, userParams)
 				if err != nil {
+					fmt.Println(err)
 					return err
 				}
 
 				fmt.Printf("%+v is created\n", userParams)
 				return nil
 
+			},
+		},
+		{
+			Name:  "additem",
+			Flags: addItemFlags,
+
+			Action: func(c *cli.Context) error {
+				userID := c.String("userid")
+				itemID := c.String("itemid")
+
+				ctx := context.Background()
+
+				err := s.Client.AddItemToUser(ctx, os.Stdout, game.UserParams{UserID: userID}, game.ItemParams{ItemID: itemID})
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
+
+				fmt.Printf("%s is added to %s\n", itemID, userID)
+				return nil
 			},
 		},
 	}
