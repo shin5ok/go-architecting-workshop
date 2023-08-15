@@ -71,18 +71,20 @@ func main() {
 			Name:  "createuser",
 			Flags: createUserFlags,
 			Action: func(c *cli.Context) error {
+
 				userId, err := uuid.NewRandom()
 				if err != nil {
 					return err
 				}
+
 				userName := c.String("username")
 				userParams := game.UserParams{UserID: userId.String(), UserName: userName}
 				err = s.Client.CreateUser(ctx, os.Stdout, userParams)
 				if err != nil {
 					return err
 				}
-				fmt.Printf("%+v is created\n", userParams)
 
+				fmt.Printf("%+v is created\n", userParams)
 				return nil
 
 			},
@@ -90,10 +92,7 @@ func main() {
 	}
 
 	app.Name = "game-api"
-	/* TODO */
-	app.Usage = `
-	Usage: game-api
-	`
+	app.Usage = `Game operation CLI via REST API`
 	app.Run(os.Args)
 
 }
