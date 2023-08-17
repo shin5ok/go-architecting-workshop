@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -66,6 +67,14 @@ func main() {
 		},
 	}
 
+	userItemFlags := []cli.Flag{
+		&cli.StringFlag{
+			Name:  "userid",
+			Value: "",
+			Usage: "Give it a user id to be targeted",
+		},
+	}
+
 	addItemFlags := []cli.Flag{
 		&cli.StringFlag{
 			Name:  "userid",
@@ -121,6 +130,35 @@ func main() {
 				}
 
 				fmt.Printf("%s is added to %s\n", itemID, userID)
+				return nil
+			},
+		},
+		{
+			Name:  "useritems",
+			Flags: userItemFlags,
+
+			Action: func(c *cli.Context) error {
+				userID := c.String("userid")
+
+				ctx := context.Background()
+
+				results, err := s.Client.UserItems(ctx, os.Stdout, userID)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
+
+				/* TODO
+				handle results as a stream interface, such as io.Reader.
+				To do it, we should change definition of the interface.
+				*/
+				data, err := json.Marshal(results)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
+
+				fmt.Println(string(data))
 				return nil
 			},
 		},
