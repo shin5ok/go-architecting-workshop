@@ -1,6 +1,3 @@
-/*
-Work in progress
-*/
 package main
 
 import (
@@ -92,6 +89,7 @@ func main() {
 		{
 			Name:  "createuser",
 			Flags: createUserFlags,
+
 			Action: func(c *cli.Context) error {
 
 				userId, err := uuid.NewRandom()
