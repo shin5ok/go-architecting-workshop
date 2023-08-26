@@ -71,7 +71,7 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 	ctx, span := otel.Tracer("main").Start(ctx, "CreateUser")
 	defer span.End()
 
-	_, err := d.Sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+	_, err := d.Sc.ReadWriteTransactionWithOptions(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 		sqlToUsers := `INSERT users (user_id, name, created_at, updated_at)
 		  VALUES (@userID, @userName, @timestamp, @timestamp)`
 		t := time.Now().Format("2006-01-02 15:04:05")
@@ -91,7 +91,8 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 		}
 
 		return nil
-	})
+	}, spanner.TransactionOptions{TransactionTag: "app=CreateUser,env=dev"})
+
 	return err
 }
 
@@ -104,7 +105,7 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 	ctx, span := otel.Tracer("main").Start(ctx, "AddItemUser")
 	defer span.End()
 
-	_, err := d.Sc.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+	_, err := d.Sc.ReadWriteTransactionWithOptions(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 
 		sqlToUsers := `INSERT user_items (user_id, item_id, created_at, updated_at)
 		  VALUES (@userID, @itemID, @timestamp, @timestamp)`
@@ -124,7 +125,8 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 			return err
 		}
 		return nil
-	})
+	}, spanner.TransactionOptions{TransactionTag: "app=AddItemToUser,env=dev"})
+
 	return err
 }
 
