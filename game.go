@@ -84,14 +84,14 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 			SQL:    sqlToUsers,
 			Params: params,
 		}
-		rowCountToUsers, err := txn.Update(ctx, stmtToUsers)
+		rowCountToUsers, err := txn.UpdateWithOptions(ctx, stmtToUsers, spanner.QueryOptions{RequestTag: "func=CreateUser,env=dev,action=insert"})
 		_ = rowCountToUsers
 		if err != nil {
 			return err
 		}
 
 		return nil
-	}, spanner.TransactionOptions{TransactionTag: "app=CreateUser,env=dev"})
+	}, spanner.TransactionOptions{TransactionTag: "func=CreateUser,env=dev"})
 
 	return err
 }
@@ -125,7 +125,7 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 			return err
 		}
 		return nil
-	}, spanner.TransactionOptions{TransactionTag: "app=AddItemToUser,env=dev"})
+	}, spanner.TransactionOptions{TransactionTag: "func=AddItemToUser,env=dev"})
 
 	return err
 }
@@ -165,7 +165,7 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 	}
 
 	ctx, span = otel.Tracer("main").Start(ctx, "txnQuery")
-	iter := txn.Query(ctx, stmt)
+	iter := txn.QueryWithOptions(ctx, stmt, spanner.QueryOptions{RequestTag: "func=UserItems,env=dev,action=query"})
 	defer iter.Stop()
 	span.End()
 
