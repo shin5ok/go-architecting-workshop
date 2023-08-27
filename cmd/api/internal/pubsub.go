@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package main
+package internal
 
 import (
 	"context"
@@ -25,7 +25,7 @@ import (
 	"cloud.google.com/go/pubsub"
 )
 
-func publishLog(client *pubsub.Client, topicName string, data map[string]interface{}) error {
+func PublishLog(client *pubsub.Client, topicName string, data map[string]interface{}) error {
 
 	if topicName == "" {
 		return fmt.Errorf("topic name is empty")

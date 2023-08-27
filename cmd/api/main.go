@@ -40,6 +40,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	game "github.com/shin5ok/go-architecting-workshop"
+	internal "github.com/shin5ok/go-architecting-workshop/cmd/api/internal"
 )
 
 var (
@@ -69,7 +70,7 @@ type User struct {
 func main() {
 
 	ctx := context.Background()
-	tp, err := newTracer(projectId)
+	tp, err := internal.NewTracer(projectId)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -171,7 +172,7 @@ func (s Serving) getUserItems(w http.ResponseWriter, r *http.Request) {
 	// publish log, just for test
 	if topicName != "" {
 		p := map[string]interface{}{"id": userID, "rev": rev}
-		publishLog(pubsubClient, topicName, p)
+		internal.PublishLog(pubsubClient, topicName, p)
 	}
 
 	render.JSON(w, r, results)
