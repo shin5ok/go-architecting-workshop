@@ -198,7 +198,7 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 
 	_, span = otel.Tracer("main").Start(ctx, "setResults")
 	jsonedResults, _ := json.Marshal(results)
-	err = d.Cache.Set(key, string(jsonedResults), 10*time.Second).Err()
+	err = d.Cache.Set(key, string(jsonedResults), 2*time.Second).Err()
 	if err != nil {
 		log.Println(err)
 	}
