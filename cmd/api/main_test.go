@@ -45,12 +45,10 @@ var (
 	fakeDbString = os.Getenv("SPANNER_STRING") + genStr()
 	fakeServing  Serving
 
+	noCleanup = os.Getenv("NO_CLEANUP") != ""
+
 	itemTestID = "d169f397-ba3f-413b-bc3c-a465576ef06e"
 	userTestID string
-
-	noCleanup = func() bool {
-		return os.Getenv("NO_CLEANUP") != ""
-	}()
 )
 
 func genStr() string {
