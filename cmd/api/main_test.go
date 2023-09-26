@@ -79,7 +79,9 @@ func init() {
 		DialTimeout: 1 * time.Second,
 	})
 
-	client, err := game.NewClient(ctx, spannerString, rdb)
+	c := game.Caching{RedisClient: rdb}
+
+	client, err := game.NewClient(ctx, spannerString, c)
 	if err != nil {
 		log.Fatal(err)
 	}
