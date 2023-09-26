@@ -47,8 +47,29 @@ type ItemParams struct {
 
 type dbClient struct {
 	Sc    *spanner.Client
-	Cache *redis.Client
+	Cache Cacher
 }
+
+type Cacher interface {
+	Get(string) (string, error)
+	Set(string, string) error
+}
+
+type cache struct {
+	redisClient *redis.Client
+}
+
+func (c *cache) Get(key string) (string, error) {
+	result, err := c.redisClient.Get(key).Result()
+	return result, err
+}
+
+func (c *cache) Set(key string, data string) error {
+	err := c.redisClient.Set(key, data, 2*time.Second).Err()
+	return err
+}
+
+// var _ Cacher = (*cache)(nil)
 
 var baseItemSliceCap = 100
 
@@ -59,9 +80,11 @@ func NewClient(ctx context.Context, dbString string, redisClient *redis.Client) 
 		return dbClient{}, err
 	}
 
+	c := cache{redisClient: redisClient}
+
 	return dbClient{
 		Sc:    client,
-		Cache: redisClient,
+		Cache: &c,
 	}, nil
 }
 
@@ -135,7 +158,7 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 
 	ctx, span := otel.Tracer("main").Start(ctx, "GetCache")
 	key := fmt.Sprintf("UserItems_%s", userID)
-	data, err := d.Cache.Get(key).Result()
+	data, err := d.Cache.Get(key)
 	span.End()
 
 	if err != nil {
@@ -198,7 +221,7 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 
 	_, span = otel.Tracer("main").Start(ctx, "setResults")
 	jsonedResults, _ := json.Marshal(results)
-	err = d.Cache.Set(key, string(jsonedResults), 2*time.Second).Err()
+	err = d.Cache.Set(key, string(jsonedResults))
 	if err != nil {
 		log.Println(err)
 	}
