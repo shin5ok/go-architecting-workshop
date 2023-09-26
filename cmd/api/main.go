@@ -102,9 +102,7 @@ func main() {
 		DialTimeout: 1 * time.Second,
 	})
 
-	c := game.Caching{RedisClient: rdb}
-
-	client, err := game.NewClient(ctx, spannerString, c)
+	client, err := game.NewClient(ctx, spannerString, rdb)
 	if err != nil {
 		log.Fatal(err)
 	}
