@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package gameexample
+package game
 
 import (
 	"context"
@@ -55,17 +55,17 @@ type Cacher interface {
 	Set(string, string) error
 }
 
-type cache struct {
-	redisClient *redis.Client
+type Caching struct {
+	RedisClient *redis.Client
 }
 
-func (c *cache) Get(key string) (string, error) {
-	result, err := c.redisClient.Get(key).Result()
+func (c *Caching) Get(key string) (string, error) {
+	result, err := c.RedisClient.Get(key).Result()
 	return result, err
 }
 
-func (c *cache) Set(key string, data string) error {
-	err := c.redisClient.Set(key, data, 2*time.Second).Err()
+func (c *Caching) Set(key string, data string) error {
+	err := c.RedisClient.Set(key, data, 2*time.Second).Err()
 	return err
 }
 
@@ -73,14 +73,12 @@ func (c *cache) Set(key string, data string) error {
 
 var baseItemSliceCap = 100
 
-func NewClient(ctx context.Context, dbString string, redisClient *redis.Client) (dbClient, error) {
+func NewClient(ctx context.Context, dbString string, c Caching) (dbClient, error) {
 
 	client, err := spanner.NewClient(ctx, dbString)
 	if err != nil {
 		return dbClient{}, err
 	}
-
-	c := cache{redisClient: redisClient}
 
 	return dbClient{
 		Sc:    client,
