@@ -104,7 +104,7 @@ func main() {
 
 	c := game.Caching{RedisClient: rdb}
 
-	client, err := game.NewClient(ctx, spannerString, c)
+	client, err := game.NewClient(ctx, spannerString, &c)
 	if err != nil {
 		log.Fatal(err)
 	}
