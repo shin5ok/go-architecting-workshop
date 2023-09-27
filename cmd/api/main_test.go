@@ -23,6 +23,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -60,6 +61,18 @@ func genStr() string {
 	return string(id) + time.Now().Format("2006-01-02")
 }
 
+type dummyCaching struct{}
+
+func (c *dummyCaching) Get(key string) (string, error) {
+	return "", errors.New("")
+}
+
+func (c *dummyCaching) Set(key string, data string) error {
+	return nil
+}
+
+var _ game.Cacher = (*dummyCaching)(nil)
+
 func init() {
 
 	log.Println("Creating " + fakeDbString)
@@ -70,16 +83,25 @@ func init() {
 
 	ctx := context.Background()
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:        redisHost,
-		Password:    "",
-		DB:          0,
-		PoolSize:    10,
-		PoolTimeout: 30 * time.Second,
-		DialTimeout: 1 * time.Second,
-	})
+	var c game.Cacher
 
-	c := game.Caching{RedisClient: rdb}
+	// no use redis
+	c = &dummyCaching{}
+
+	if redisHost != "" {
+		rdb := redis.NewClient(&redis.Options{
+			Addr:        redisHost,
+			Password:    "",
+			DB:          0,
+			PoolSize:    10,
+			PoolTimeout: 30 * time.Second,
+			DialTimeout: 1 * time.Second,
+		})
+
+		c = &game.Caching{RedisClient: rdb}
+	}
+
+	fmt.Printf("cache %#+v\n", c)
 
 	client, err := game.NewClient(ctx, spannerString, c)
 	if err != nil {

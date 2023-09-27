@@ -73,7 +73,7 @@ func (c *Caching) Set(key string, data string) error {
 
 var baseItemSliceCap = 100
 
-func NewClient(ctx context.Context, dbString string, c Caching) (dbClient, error) {
+func NewClient(ctx context.Context, dbString string, c Cacher) (dbClient, error) {
 
 	client, err := spanner.NewClient(ctx, dbString)
 	if err != nil {
@@ -82,7 +82,7 @@ func NewClient(ctx context.Context, dbString string, c Caching) (dbClient, error
 
 	return dbClient{
 		Sc:    client,
-		Cache: &c,
+		Cache: c,
 	}, nil
 }
 
