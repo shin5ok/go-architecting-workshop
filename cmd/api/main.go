@@ -44,7 +44,9 @@ import (
 )
 
 var (
-	appName       = "myapp"
+	appName    = "myapp"
+	appVersion = "1.01"
+
 	spannerString = os.Getenv("SPANNER_STRING")
 	redisHost     = os.Getenv("REDIS_HOST")
 	servicePort   = os.Getenv("PORT")
@@ -77,8 +79,8 @@ func main() {
 	defer tp.Shutdown(ctx)
 
 	profilerCfg := profiler.Config{
-		Service:           "game-api",
-		ServiceVersion:    "1.0.0",
+		Service:           appName,
+		ServiceVersion:    appVersion,
 		ProjectID:         projectId,
 		EnableOCTelemetry: true,
 	}
