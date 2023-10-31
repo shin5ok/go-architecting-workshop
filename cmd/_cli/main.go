@@ -163,7 +163,7 @@ func main() {
 	}
 
 	app.Name = "game-api"
-	app.Usage = `Game operation CLI via REST API`
+	app.Usage = "Game operation CLI via REST API"
 	app.Run(os.Args)
 
 }

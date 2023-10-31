@@ -112,12 +112,20 @@ func init() {
 		Client: client,
 	}
 
-	schemaFiles, _ := filepath.Glob("schemas/*_ddl.sql")
+	schemaFiles, err := filepath.Glob("schemas/*_ddl.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err := testutil.InitData(ctx, fakeDbString, schemaFiles); err != nil {
 		log.Fatal(err)
 	}
 
-	dmlFiles, _ := filepath.Glob("schemas/*_dml.sql")
+	dmlFiles, err := filepath.Glob("schemas/*_dml.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err := testutil.MakeData(ctx, fakeDbString, dmlFiles); err != nil {
 		log.Fatal(err)
 	}
