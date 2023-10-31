@@ -105,8 +105,8 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 			SQL:    sqlToUsers,
 			Params: params,
 		}
-		rowCountToUsers, err := txn.UpdateWithOptions(ctx, stmtToUsers, spanner.QueryOptions{RequestTag: "func=CreateUser,env=dev,action=insert"})
-		_ = rowCountToUsers
+
+		_, err := txn.UpdateWithOptions(ctx, stmtToUsers, spanner.QueryOptions{RequestTag: "func=CreateUser,env=dev,action=insert"})
 		if err != nil {
 			return err
 		}
