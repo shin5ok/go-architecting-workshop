@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -71,10 +72,14 @@ type User struct {
 
 func main() {
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
 	ctx := context.Background()
 	tp, err := internal.NewTracer(projectId)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
+		return
 	}
 	defer tp.Shutdown(ctx)
 
@@ -86,12 +91,14 @@ func main() {
 	}
 
 	if err := profiler.Start(profilerCfg); err != nil {
-		log.Fatal((err))
+		logger.Error(err.Error())
+		return
 	}
 
 	pubsubClient, err := pubsub.NewClient(ctx, projectId)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
+		return
 	}
 	defer pubsubClient.Close()
 
@@ -108,7 +115,8 @@ func main() {
 
 	client, err := game.NewClient(ctx, spannerString, &c)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
+		return
 	}
 
 	defer client.Sc.Close()
