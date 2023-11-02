@@ -53,6 +53,7 @@ var (
 	servicePort   = os.Getenv("PORT")
 	projectId     = os.Getenv("GOOGLE_CLOUD_PROJECT")
 	rev           = os.Getenv("K_REVISION")
+	logger        *slog.Logger
 )
 
 var (
@@ -70,10 +71,12 @@ type User struct {
 	Id   string `json:"id"`
 }
 
-func main() {
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+func init() {
+	logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+}
+
+func main() {
 
 	ctx := context.Background()
 	tp, err := internal.NewTracer(projectId)
