@@ -72,8 +72,27 @@ type User struct {
 }
 
 func init() {
-	logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	replace := func(groups []string, a slog.Attr) slog.Attr {
+		if a.Key == slog.LevelKey && a.Value.String() == slog.LevelWarn.String() {
+			return slog.String("severity", "WARNING")
+		}
+		if a.Key == "level" {
+			return slog.String("severity", a.Value.String())
+		}
+		if a.Key == "msg" {
+			return slog.String("message", a.Value.String())
+		}
+		return a
+	}
+
+	options := slog.HandlerOptions{
+		Level:     slog.LevelInfo,
+		AddSource: true, ReplaceAttr: replace,
+	}
+
+	logger = slog.New(slog.NewJSONHandler(os.Stdout, &options))
 	slog.SetDefault(logger)
+
 }
 
 func main() {
