@@ -22,6 +22,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/user"
 	"time"
 
 	"cloud.google.com/go/profiler"
@@ -50,6 +51,7 @@ var (
 
 	spannerString = os.Getenv("SPANNER_STRING")
 	redisHost     = os.Getenv("REDIS_HOST")
+	redisPassword = os.Getenv("REDIS_PASSWORD") // Not required in many case
 	servicePort   = os.Getenv("PORT")
 	projectId     = os.Getenv("GOOGLE_CLOUD_PROJECT")
 	rev           = os.Getenv("K_REVISION")
@@ -72,6 +74,7 @@ type User struct {
 }
 
 func init() {
+
 	replace := func(groups []string, a slog.Attr) slog.Attr {
 		if a.Key == slog.LevelKey && a.Value.String() == slog.LevelWarn.String() {
 			return slog.String("severity", "WARNING")
@@ -96,6 +99,8 @@ func init() {
 }
 
 func main() {
+
+	logger.Info("Preparing to start with some options")
 
 	ctx := context.Background()
 	tp, err := internal.NewTracer(projectId)
@@ -126,7 +131,7 @@ func main() {
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr:        redisHost,
-		Password:    "",
+		Password:    redisPassword,
 		DB:          0,
 		PoolSize:    10,
 		PoolTimeout: 30 * time.Second,
@@ -173,6 +178,26 @@ func main() {
 		t.Post("/user/{user_name:[a-z0-9-.]+}", s.createUser)
 		t.Put("/user_id/{user_id:[a-z0-9-.]+}/{item_id:[a-z0-9-.]+}", s.addItemToUser)
 	})
+
+	user, err := user.Current()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	logger.Info(
+		"Starging to serve for Game API",
+		slog.Group(
+			"api",
+			"message", "complete preparation to start server",
+			"uid", user.Uid,
+			"gid", user.Gid,
+			"logging.googleapis.com/labels", map[string]any{
+				"package":  "main",
+				"api_name": appName,
+			},
+		),
+	)
 
 	if err := http.ListenAndServe(":"+servicePort, r); err != nil {
 		oplog.Err(err)
