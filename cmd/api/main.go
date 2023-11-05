@@ -166,7 +166,6 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(httplog.RequestLogger(httpLogger))
 	r.Use(middleware.Timeout(60 * time.Second))
-	r.Use(headerAuth)
 
 	r.Use(m)
 	r.Handle("/metrics", promhttp.Handler())
@@ -174,6 +173,8 @@ func main() {
 	r.Get("/ping", s.pingPong)
 
 	r.Route("/api", func(t chi.Router) {
+		t.Use(headerAuth)
+		t.Get("/ping", s.pingPong)
 		t.Get("/user_id/{user_id:[a-z0-9-.]+}", s.getUserItems)
 		t.Post("/user/{user_name:[a-z0-9-.]+}", s.createUser)
 		t.Put("/user_id/{user_id:[a-z0-9-.]+}/{item_id:[a-z0-9-.]+}", s.addItemToUser)
