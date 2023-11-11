@@ -38,12 +38,12 @@ type GameUserOperation interface {
 }
 
 type UserParams struct {
-	UserID   string `validate:"required,max=48"`
-	UserName string `validate:"min=3,max=64"`
+	UserID   string `validate:"required,max=36"`
+	UserName string
 }
 
 type ItemParams struct {
-	ItemID string `validate:"required,max=48"`
+	ItemID string `validate:"required,max=36"`
 }
 
 type dbClient struct {
@@ -72,8 +72,6 @@ func (c *Caching) Set(key string, data string) error {
 
 // var _ Cacher = (*cache)(nil)
 var validate = validator.New(validator.WithRequiredStructEnabled())
-
-var baseItemSliceCap = 100
 
 func NewClient(ctx context.Context, dbString string, c Cacher) (dbClient, error) {
 
@@ -201,6 +199,9 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 	span.End()
 
 	_, span = otel.Tracer("main").Start(ctx, "readResults")
+
+	baseItemSliceCap := 100
+
 	results := make([]map[string]interface{}, 0, baseItemSliceCap)
 	for {
 		row, err := iter.Next()
