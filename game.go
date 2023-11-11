@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 
 	"cloud.google.com/go/spanner"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/api/iterator"
@@ -37,12 +38,12 @@ type GameUserOperation interface {
 }
 
 type UserParams struct {
-	UserID   string
-	UserName string
+	UserID   string `validate:"required,max=48"`
+	UserName string `validate:"regexp=[a-z0-9]+"`
 }
 
 type ItemParams struct {
-	ItemID string
+	ItemID string `validate:"required,max=48"`
 }
 
 type dbClient struct {
@@ -70,6 +71,7 @@ func (c *Caching) Set(key string, data string) error {
 }
 
 // var _ Cacher = (*cache)(nil)
+var validate = validator.New(validator.WithRequiredStructEnabled())
 
 var baseItemSliceCap = 100
 
@@ -91,6 +93,10 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 
 	ctx, span := otel.Tracer("main").Start(ctx, "CreateUser")
 	defer span.End()
+
+	if err := validate.Struct(u); err != nil {
+		return err
+	}
 
 	_, err := d.Sc.ReadWriteTransactionWithOptions(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 		sqlToUsers := `INSERT users (user_id, name, created_at, updated_at)
@@ -125,6 +131,10 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 
 	ctx, span := otel.Tracer("main").Start(ctx, "AddItemUser")
 	defer span.End()
+
+	if err := validate.Struct(u); err != nil {
+		return err
+	}
 
 	_, err := d.Sc.ReadWriteTransactionWithOptions(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 
