@@ -39,7 +39,7 @@ type GameUserOperation interface {
 
 type UserParams struct {
 	UserID   string `validate:"required,max=48"`
-	UserName string `validate:"regexp=[a-z0-9]+"`
+	UserName string `validate:"min=3,max=64"`
 }
 
 type ItemParams struct {
