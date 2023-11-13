@@ -193,7 +193,7 @@ func main() {
 			"message", "complete preparation to start server",
 			"uid", user.Uid,
 			"gid", user.Gid,
-			"logging.googleapis.com/labels", map[string]any{
+			"logging.googleapis.com/labels", map[string]interface{}{
 				"package":  "main",
 				"api_name": appName,
 			},
