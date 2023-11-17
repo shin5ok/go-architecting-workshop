@@ -149,7 +149,7 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 			Params: params,
 		}
 		rowCountToUsers, err := txn.Update(ctx, stmtToUsers)
-		_ = rowCountToUsers
+		log.Printf("%d records has been updated\n", rowCountToUsers)
 		if err != nil {
 			return err
 		}
@@ -229,7 +229,10 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 	span.End()
 
 	_, span = otel.Tracer("main").Start(ctx, "setResults")
-	jsonedResults, _ := json.Marshal(results)
+	jsonedResults, err := json.Marshal(results)
+	if err != nil {
+		return results, err
+	}
 	err = d.Cache.Set(key, string(jsonedResults))
 	if err != nil {
 		log.Println(err)
