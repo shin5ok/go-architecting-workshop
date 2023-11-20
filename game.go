@@ -198,7 +198,7 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 	defer iter.Stop()
 	span.End()
 
-	_, span = otel.Tracer("main").Start(ctx, "readResults")
+	ctx, span = otel.Tracer("main").Start(ctx, "readResults")
 
 	baseItemSliceCap := 100
 
