@@ -31,12 +31,6 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-type GameUserOperation interface {
-	CreateUser(context.Context, io.Writer, UserParams) error
-	AddItemToUser(context.Context, io.Writer, UserParams, ItemParams) error
-	UserItems(context.Context, io.Writer, string) ([]map[string]interface{}, error)
-}
-
 type UserParams struct {
 	UserID   string `validate:"required,max=36"`
 	UserName string
@@ -49,11 +43,6 @@ type ItemParams struct {
 type dbClient struct {
 	Sc    *spanner.Client
 	Cache Cacher
-}
-
-type Cacher interface {
-	Get(string) (string, error)
-	Set(string, string) error
 }
 
 type Caching struct {
