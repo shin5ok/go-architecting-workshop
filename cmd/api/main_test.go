@@ -36,14 +36,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-redis/redis"
-	gonanoid "github.com/matoous/go-nanoid"
 	game "github.com/shin5ok/go-architecting-workshop"
 	"github.com/shin5ok/go-architecting-workshop/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	fakeDbString = os.Getenv("SPANNER_STRING") + genStr()
+	fakeDbString = os.Getenv("SPANNER_STRING") + testutil.GenStr()
 	fakeServing  Serving
 
 	noCleanup = os.Getenv("NO_CLEANUP") != ""
@@ -51,15 +50,6 @@ var (
 	itemTestID = "d169f397-ba3f-413b-bc3c-a465576ef06e"
 	userTestID string
 )
-
-func genStr() string {
-	var src = "abcdefghijklmnopqrstuvwxyz09123456789"
-	id, err := gonanoid.Generate(src, 6)
-	if err != nil {
-		panic(err)
-	}
-	return string(id) + time.Now().Format("2006-01-02")
-}
 
 type dummyCaching struct{}
 
