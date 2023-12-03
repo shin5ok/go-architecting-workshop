@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,33 +12,26 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/google/uuid"
+
+	//game "github.com/shin5ok/go-architecting-workshop"
 	"github.com/shin5ok/go-architecting-workshop/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
 	fakeDbString = os.Getenv("SPANNER_STRING") + testutil.GenStr()
-	fakeServing  Serving
 
 	noCleanup = os.Getenv("NO_CLEANUP") != ""
 
 	itemTestID = "d169f397-ba3f-413b-bc3c-a465576ef06e"
 	userTestID string
+
+	testDbClient dbClient
 )
 
 type Serving struct {
 	Client dbClient
-}
-
-func TestNewClient(t *testing.T) {
-	ctx := context.Background()
-
-	client, err := NewClient(ctx, fakeDbString, nil)
-	assert.IsType(t, client, dbClient{})
-
-	if err != nil {
-		t.Fatalf("NewClient: %v", err)
-	}
 }
 
 type dummyCaching struct{}
@@ -52,6 +46,7 @@ func (c *dummyCaching) Set(key string, data string) error {
 
 func init() {
 
+	fmt.Println(noCleanup)
 	log.Println("Creating " + fakeDbString)
 
 	if match, _ := regexp.MatchString("^projects/your-project-id/", fakeDbString); match {
@@ -95,6 +90,43 @@ func init() {
 	if err := testutil.MakeData(ctx, fakeDbString, dmlFiles); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func TestNewClient(t *testing.T) {
+	ctx := context.Background()
+
+	client, err := NewClient(ctx, fakeDbString, nil)
+	assert.IsType(t, client, dbClient{})
+
+	testDbClient = client
+
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+}
+
+func TestCreateUser(t *testing.T) {
+	// dbClient, err := NewClient(context.Background(), fakeDbString, nil)
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+	// defer dbClient.Sc.Close()
+
+	userId, _ := uuid.NewUUID()
+
+	err := testDbClient.CreateUser(
+		context.Background(),
+		io.Discard,
+		UserParams{
+			UserID:   userId.String(),
+			UserName: "test",
+		},
+	)
+
+	if err != nil {
+		t.Error(err)
+	}
+
 }
 
 func Test_cleaning(t *testing.T) {
