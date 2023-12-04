@@ -187,7 +187,7 @@ func Test_getUserItems(t *testing.T) {
 	}
 }
 
-func Test_cleaning(t *testing.T) {
+func TestCleaning(t *testing.T) {
 	t.Cleanup(
 		func() {
 			if noCleanup {

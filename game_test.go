@@ -106,12 +106,6 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	// dbClient, err := NewClient(context.Background(), fakeDbString, nil)
-	// if err != nil {
-	// 	t.Error(err)
-	// }
-	// defer dbClient.Sc.Close()
-
 	userId, _ := uuid.NewUUID()
 
 	err := testDbClient.CreateUser(
@@ -129,7 +123,7 @@ func TestCreateUser(t *testing.T) {
 
 }
 
-func Test_cleaning(t *testing.T) {
+func TestCleaning(t *testing.T) {
 	t.Cleanup(
 		func() {
 			if noCleanup {
