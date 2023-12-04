@@ -107,12 +107,13 @@ func TestNewClient(t *testing.T) {
 
 func TestCreateUser(t *testing.T) {
 	userId, _ := uuid.NewUUID()
+	userTestID = userId.String()
 
 	err := testDbClient.CreateUser(
 		context.Background(),
 		io.Discard,
 		UserParams{
-			UserID:   userId.String(),
+			UserID:   userTestID,
 			UserName: "test",
 		},
 	)
@@ -120,8 +121,6 @@ func TestCreateUser(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	userTestID = userId.String()
 
 }
 
