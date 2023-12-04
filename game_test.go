@@ -121,6 +121,29 @@ func TestCreateUser(t *testing.T) {
 		t.Error(err)
 	}
 
+	userTestID = userId.String()
+
+}
+
+func TestAddItemUser(t *testing.T) {
+
+	userTestName := "test"
+
+	err := testDbClient.AddItemToUser(
+		context.Background(),
+		io.Discard,
+		UserParams{
+			UserID:   userTestID,
+			UserName: userTestName,
+		},
+		ItemParams{
+			ItemID: itemTestID,
+		},
+	)
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestCleaning(t *testing.T) {
