@@ -27,6 +27,10 @@ var (
 	itemTestID = "d169f397-ba3f-413b-bc3c-a465576ef06e"
 	userTestID string
 
+	c Cacher
+
+	testRdb *redis.Client
+
 	testDbClient dbClient
 )
 
@@ -55,12 +59,10 @@ func init() {
 
 	ctx := context.Background()
 
-	var c Cacher
-
 	// no use redis
 	c = &dummyCaching{}
 
-	rdb := redis.NewClient(&redis.Options{
+	testRdb = redis.NewClient(&redis.Options{
 		Addr:        "127.0.0.1:6379",
 		Password:    "",
 		DB:          0,
@@ -69,7 +71,7 @@ func init() {
 		DialTimeout: 1 * time.Second,
 	})
 
-	c = &Caching{RedisClient: rdb}
+	c = &Caching{RedisClient: testRdb}
 
 	fmt.Printf("cache %#+v\n", c)
 
@@ -95,7 +97,7 @@ func init() {
 func TestNewClient(t *testing.T) {
 	ctx := context.Background()
 
-	client, err := NewClient(ctx, fakeDbString, nil)
+	client, err := NewClient(ctx, fakeDbString, c)
 	assert.IsType(t, client, dbClient{})
 
 	testDbClient = client
@@ -143,6 +145,28 @@ func TestAddItemUser(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func TestUserItems(t *testing.T) {
+
+	resultData, err := testDbClient.UserItems(
+		context.Background(),
+		io.Discard,
+		userTestID,
+	)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(resultData) == 0 {
+		t.Error("no data")
+	}
+
+	data := resultData[0]
+
+	assert.Equal(t, data["item_id"], itemTestID)
+
 }
 
 func TestCleaning(t *testing.T) {
