@@ -105,7 +105,7 @@ func init() {
 	}
 }
 
-func Test_run(t *testing.T) {
+func TestRun(t *testing.T) {
 
 	req, err := http.NewRequest("GET", "/", nil)
 	assert.Nil(t, err)
@@ -120,7 +120,7 @@ func Test_run(t *testing.T) {
 
 }
 
-func Test_createUser(t *testing.T) {
+func TestCreateUser(t *testing.T) {
 
 	path := "test-user"
 	ctx := chi.NewRouteContext()
@@ -145,7 +145,7 @@ func Test_createUser(t *testing.T) {
 }
 
 // This test depends on Test_createUser
-func Test_addItemUser(t *testing.T) {
+func TestAddItemUser(t *testing.T) {
 
 	ctx := chi.NewRouteContext()
 	ctx.URLParams.Add("user_id", userTestID)
@@ -167,7 +167,7 @@ func Test_addItemUser(t *testing.T) {
 
 }
 
-func Test_getUserItems(t *testing.T) {
+func TestGetUserItems(t *testing.T) {
 
 	ctx := chi.NewRouteContext()
 	ctx.URLParams.Add("user_id", userTestID)
