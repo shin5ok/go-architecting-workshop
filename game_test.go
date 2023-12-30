@@ -2,7 +2,6 @@ package game
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -50,7 +49,7 @@ func (c *dummyCaching) Set(key string, data string) error {
 
 func init() {
 
-	fmt.Println(noCleanup)
+	log.Println("NO CLEANUP", noCleanup)
 	log.Println("Creating " + fakeDbString)
 
 	if match, _ := regexp.MatchString("^projects/your-project-id/", fakeDbString); match {
@@ -73,7 +72,7 @@ func init() {
 
 	c = &Caching{RedisClient: testRdb}
 
-	fmt.Printf("cache %#+v\n", c)
+	log.Printf("cache %#+v\n", c)
 
 	schemaFiles, err := filepath.Glob("schemas/*_ddl.sql")
 	if err != nil {
