@@ -202,7 +202,7 @@ resource "google_compute_target_https_proxy" "run_https_proxy" {
 }
 
 resource "google_compute_global_forwarding_rule" "run_lb" {
-  name = "rub-lb"
+  name = "run-lb"
 
   target     = google_compute_target_https_proxy.run_https_proxy.id
   port_range = "443"
