@@ -75,7 +75,7 @@ func init() {
 		c = &game.Caching{RedisClient: rdb}
 	}
 
-	fmt.Printf("cache %#+v\n", c)
+	log.Printf("cache %#+v\n", c)
 
 	client, err := game.NewClient(ctx, spannerString, c)
 	if err != nil {
