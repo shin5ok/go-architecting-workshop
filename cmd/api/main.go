@@ -207,6 +207,7 @@ func main() {
 }
 
 var errorRender = func(w http.ResponseWriter, r *http.Request, httpCode int, err error) {
+	logger.Error(err.Error(), "http code", httpCode)
 	render.Status(r, httpCode)
 	render.JSON(w, r, map[string]interface{}{"ERROR": err.Error()})
 }
