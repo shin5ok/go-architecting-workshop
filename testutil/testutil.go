@@ -20,9 +20,11 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"time"
 
 	"cloud.google.com/go/spanner"
 	database "cloud.google.com/go/spanner/admin/database/apiv1"
+	gonanoid "github.com/matoous/go-nanoid"
 	adminpb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
@@ -59,6 +61,15 @@ func InitData(ctx context.Context, db string, files []string) error {
 		return err
 	}
 	return nil
+}
+
+func GenStr() string {
+	var src = "abcdefghijklmnopqrstuvwxyz09123456789"
+	id, err := gonanoid.Generate(src, 6)
+	if err != nil {
+		panic(err)
+	}
+	return string(id) + time.Now().Format("2006-01-02")
 }
 
 // func InitData(ctx context.Context, db string, files []string) error {

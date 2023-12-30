@@ -12,6 +12,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/httplog v0.2.5
 	github.com/go-chi/render v1.0.2
+	github.com/go-playground/validator/v10 v10.16.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/matoous/go-nanoid v1.5.0
@@ -49,7 +50,6 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.16.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect

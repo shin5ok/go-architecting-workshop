@@ -1,20 +1,4 @@
 /*
- Copyright 2023 Google LLC
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-*/
-
-/*
 This is just for local test with Spanner Emulator
 Note: Before running this test, run spanner emulator and create an instance as "test-instance"
 */
@@ -36,14 +20,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-redis/redis"
-	gonanoid "github.com/matoous/go-nanoid"
 	game "github.com/shin5ok/go-architecting-workshop"
 	"github.com/shin5ok/go-architecting-workshop/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	fakeDbString = os.Getenv("SPANNER_STRING") + genStr()
+	fakeDbString = os.Getenv("SPANNER_STRING") + testutil.GenStr()
 	fakeServing  Serving
 
 	noCleanup = os.Getenv("NO_CLEANUP") != ""
@@ -51,15 +34,6 @@ var (
 	itemTestID = "d169f397-ba3f-413b-bc3c-a465576ef06e"
 	userTestID string
 )
-
-func genStr() string {
-	var src = "abcdefghijklmnopqrstuvwxyz09123456789"
-	id, err := gonanoid.Generate(src, 6)
-	if err != nil {
-		panic(err)
-	}
-	return string(id) + time.Now().Format("2006-01-02")
-}
 
 type dummyCaching struct{}
 
@@ -131,7 +105,7 @@ func init() {
 	}
 }
 
-func Test_run(t *testing.T) {
+func TestRun(t *testing.T) {
 
 	req, err := http.NewRequest("GET", "/", nil)
 	assert.Nil(t, err)
@@ -146,7 +120,7 @@ func Test_run(t *testing.T) {
 
 }
 
-func Test_createUser(t *testing.T) {
+func TestCreateUser(t *testing.T) {
 
 	path := "test-user"
 	ctx := chi.NewRouteContext()
@@ -171,7 +145,7 @@ func Test_createUser(t *testing.T) {
 }
 
 // This test depends on Test_createUser
-func Test_addItemUser(t *testing.T) {
+func TestAddItemUser(t *testing.T) {
 
 	ctx := chi.NewRouteContext()
 	ctx.URLParams.Add("user_id", userTestID)
@@ -193,7 +167,7 @@ func Test_addItemUser(t *testing.T) {
 
 }
 
-func Test_getUserItems(t *testing.T) {
+func TestGetUserItems(t *testing.T) {
 
 	ctx := chi.NewRouteContext()
 	ctx.URLParams.Add("user_id", userTestID)
@@ -213,7 +187,7 @@ func Test_getUserItems(t *testing.T) {
 	}
 }
 
-func Test_cleaning(t *testing.T) {
+func TestCleaning(t *testing.T) {
 	t.Cleanup(
 		func() {
 			if noCleanup {
