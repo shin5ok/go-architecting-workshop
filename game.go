@@ -86,6 +86,7 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 	}
 
 	_, err := d.Sc.ReadWriteTransactionWithOptions(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+		ctx, span = otel.Tracer("main").Start(ctx, "PreparingStatement")
 		sqlToUsers := `INSERT users (user_id, name, created_at, updated_at)
 		  VALUES (@userID, @userName, @timestamp, @timestamp)`
 		t := time.Now().Format("2006-01-02 15:04:05")
@@ -98,8 +99,11 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 			SQL:    sqlToUsers,
 			Params: params,
 		}
+		span.End()
 
+		ctx, span = otel.Tracer("main").Start(ctx, "UpdateRecord")
 		_, err := txn.UpdateWithOptions(ctx, stmtToUsers, spanner.QueryOptions{RequestTag: "func=CreateUser,env=dev,action=insert"})
+		span.End()
 		if err != nil {
 			return err
 		}
