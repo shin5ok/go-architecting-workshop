@@ -4,7 +4,7 @@
 - スタート前の準備
 - ***とにかく急いで構築したい人向け***（terraform を利用）
 - アプリケーションのデプロイ
-- Google BigQuery へのログの転送
+- **オプション**: Google BigQuery へのログの転送
 - **オプション**: マネージド証明書付きの Google Cloud LoadBalancer のデプロイ
 
 ![architecture_diagram](diagram/egg.png)
@@ -92,7 +92,7 @@ make app
 [こちら](#7-おめでとう)まで移動して、テストしましょう
 
 >[!NOTE]
-テストは Cloud Run の組み込み URLで行う想定ですが、適切に DNS を設定すれば Certificate anager による SSLの証明書が発行され、指定した FQDN でアクセスできます  
+テストは Cloud Run の組み込み URLで行う想定ですが、適切に DNS認証 を設定すれば Certificate Manager による SSLの証明書が発行され、指定した FQDN でアクセスできます  
 Terraform の出力の dns_auth のエントリを適切なDNSサーバーに設定してください（Cloud DNSで[設定する例](https://cloud.google.com/certificate-manager/docs/dns-authorizations?hl=ja#cname-record))
 
 
