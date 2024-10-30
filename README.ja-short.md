@@ -315,8 +315,7 @@ gcloud compute url-maps create urlmap-for-game-api \
 ```
 FQDN=<your FQDN you want to use>
 gcloud certificate-manager certificates create ssl-cert-for-game-api \
-    --domains=$FQDN \
-    --dns-authorizations="dns-auth-my-ssl-cert"
+    --domains=$FQDN
 ```
 - 証明書マップを作成
 ```
@@ -327,10 +326,16 @@ gcloud certificate-manager maps create my-cert-map
 ```
 gcloud certificate-manager maps entries create ssl-entry01     --map=my-cert-map     --certificates=ssl-cert-for-game-api      --hostname=$FQDN
 ```
+
+Active になるまで時間がかかるので、下記のコマンドで状態を確認します
+```
+gcloud certificate-manager certificates describe ssl-cert-for-game-api
+```
+
 ### 6. ターゲット Proxy を作成
 ```
 gcloud compute target-https-proxies create target-proxy-for-game-api \
-   --ssl-certificates=ssl-cert-for-game-api \
+   --certificate-map=my-cert-map \
    --url-map=urlmap-for-game-api
 ```
 
@@ -366,7 +371,3 @@ gcloud dns record-sets create --type=A --zone=<your-zone-name> --rrdatas=<IP add
 gcloud dns managed-zones describe <your-zone-name> --format=json | jq -r .nameServers[]
 ```
 複数の NS レコードすべてを登録します
-
-証明書が有効になるまで、しばらくかかります（通常 10分以上）  
-それまではアクセスしても、4xx/5xx レコードが返却されたり、SSL エラーになります
-
