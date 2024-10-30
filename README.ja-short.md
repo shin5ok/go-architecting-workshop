@@ -312,13 +312,24 @@ gcloud compute url-maps create urlmap-for-game-api \
    --default-service backend-for-game-api
 ```
 
-### 5. マネージド証明書の作成
+### 5. Certificate Manager によるマネージド証明書の作成
+
+- 証明書を作成
 ```
 FQDN=<your FQDN you want to use>
-gcloud compute ssl-certificates create ssl-cert-for-game-api \
-   --domains $FQDN
+gcloud certificate-manager certificates create ssl-cert-for-game-api \
+    --domains=$FQDN \
+    --dns-authorizations="dns-auth-my-ssl-cert"
+```
+- 証明書マップを作成
+```
+gcloud certificate-manager maps create my-cert-map
 ```
 
+- 証明書マップエントリを追加
+```
+gcloud certificate-manager maps entries create ssl-entry01     --map=my-cert-map     --certificates=ssl-cert-for-game-api      --hostname=$FQDN
+```
 ### 6. ターゲット Proxy を作成
 ```
 gcloud compute target-https-proxies create target-proxy-for-game-api \
