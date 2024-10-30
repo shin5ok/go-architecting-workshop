@@ -74,21 +74,32 @@ export TF_VAR_zone=asia-northeast1-a
 make clean
 unset SPANNER_EMULATOR_HOST
 ```
-- Google Cloud の環境とアプリケーションをデプロイします
+- Google Cloud の環境とアプリケーションをデプロイします  
+
+インフラの構築
 ```
 make all
+```
+Terraform による出力が確認できます
+
+アプリのデプロイ
+```
 make app
 ```
 
 以上、完了です  
 [こちら](#7-おめでとう)まで移動して、テストしましょう
 
----
+>[!NOTE]
+テストは Cloud Run の組み込み URLで行う想定ですが、適切に DNS を設定すれば Certificate anager による SSLの証明書が発行され、指定した FQDN でアクセス可能となります  
+Terraform の出力の dns_auth のエントリを適切なDNSサーバーに設定してください（Cloud DNSで[設定する例](https://cloud.google.com/certificate-manager/docs/dns-authorizations?hl=ja#cname-record))
+
+
 ## アプリケーションのデプロイ
 
 ### 1. 必要な Google Cloud のサービスを有効化
 ```
-gcloud services enable \
+gcloud services enable private\
 spanner.googleapis.com \
 run.googleapis.com \
 cloudbuild.googleapis.com \
@@ -148,7 +159,6 @@ show create table user_items;
 show create table items;
 select * from items;
 ```
-
 ### 7. Serverless Access Connector の作成
 ```
 gcloud compute networks vpc-access connectors create game-api-vpc-access --network my-network --region asia-northeast1 --range 10.8.0.0/28
@@ -157,7 +167,6 @@ gcloud compute networks vpc-access connectors create game-api-vpc-access --netwo
 ### 8. Cloud Run サービスをデプロイ
 アプリケーションで利用する環境変数を設定
 ```
-VA=projects/$GOOGLE_CLOUD_PROJECT/locations/asia-northeast1/connectors/game-api-vpc-access
 REDIS_HOST=$(gcloud redis instances describe test-redis --region=asia-northeast1 --format=json | jq .host -r)
 SPANNER_STRING=projects/$GOOGLE_CLOUD_PROJECT/instances/test-instance/databases/game
 ```
@@ -174,7 +183,10 @@ Dockerfile なしで、コンテナを自動ビルド、Cloud Run にデプロ�
 ```
 gcloud run deploy game-api --allow-unauthenticated --region=asia-northeast1 \
   --set-env-vars=GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,SPANNER_STRING=$SPANNER_STRING,REDIS_HOST=$REDIS_HOST:6379 \
-  --vpc-connector=$VA --service-account=$SA --cpu-throttling --source=.
+  --vpc-egress=private-ranges-only --network=my-network --subnet=my-network \
+  --service-account=$SA \
+  --cpu-throttling \
+  --source=.
 ```
 以上  
 
@@ -196,7 +208,8 @@ docker push $IMAGE
 ```
 gcloud run deploy game-api --allow-unauthenticated --region=asia-northeast1 \
 --set-env-vars=SPANNER_STRING=$SPANNER_STRING,REDIS_HOST=$REDIS_HOST \
---vpc-connector=$VA --service-account=$SA \
+--vpc-egress=private-ranges-only --network=my-network --subnet=my-network \
+--service-account=$SA \
 --image $IMAGE
 ```
 
