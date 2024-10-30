@@ -201,6 +201,10 @@ func main() {
 		),
 	)
 
+	if servicePort == "" {
+		servicePort = "8080"
+	}
+
 	if err := http.ListenAndServe(":"+servicePort, r); err != nil {
 		oplog.Err(err)
 	}
