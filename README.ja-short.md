@@ -170,6 +170,7 @@ gcloud compute networks vpc-access connectors create game-api-vpc-access --netwo
 ```
 REDIS_HOST=$(gcloud redis instances describe test-redis --region=asia-northeast1 --format=json | jq .host -r)
 SPANNER_STRING=projects/$GOOGLE_CLOUD_PROJECT/instances/test-instance/databases/game
+VA=projects/$GOOGLE_CLOUD_PROJECT/locations/asia-northeast1/connectors/game-api-vpc-access
 ```
 
 #### Cloud Build のサービスアカウントに権限を付与  
@@ -184,10 +185,7 @@ Dockerfile なしで、コンテナを自動ビルド、Cloud Run にデプロ�
 ```
 gcloud run deploy game-api --allow-unauthenticated --region=asia-northeast1 \
   --set-env-vars=GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,SPANNER_STRING=$SPANNER_STRING,REDIS_HOST=$REDIS_HOST:6379 \
-  --vpc-egress=private-ranges-only --network=my-network --subnet=my-network \
-  --service-account=$SA \
-  --cpu-throttling \
-  --source=.
+  --vpc-connector=$VA --service-account=$SA --cpu-throttling --source=.
 ```
 以上  
 
@@ -209,8 +207,7 @@ docker push $IMAGE
 ```
 gcloud run deploy game-api --allow-unauthenticated --region=asia-northeast1 \
 --set-env-vars=SPANNER_STRING=$SPANNER_STRING,REDIS_HOST=$REDIS_HOST \
---vpc-egress=private-ranges-only --network=my-network --subnet=my-network \
---service-account=$SA \
+--vpc-connector=$VA --service-account=$SA \
 --image $IMAGE
 ```
 
