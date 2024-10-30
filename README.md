@@ -241,6 +241,12 @@ VA=projects/$GOOGLE_CLOUD_PROJECT/locations/asia-northeast1/connectors/game-api-
 REDIS_HOST=$(gcloud redis instances describe test-redis --region=asia-northeast1 --format=json | jq .host -r)
 ```
 
+Configure the service account will be used for Cloud Build.  
+This is required to take care of [the change](https://cloud.google.com/build/docs/cloud-build-service-account-updates).
+```
+make build-sa
+```
+
 - Option1: With buildpacks
 ```
 gcloud run deploy game-api --allow-unauthenticated --region=asia-northeast1 --set-env-vars=GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,SPANNER_STRING=$SPANNER_STRING,REDIS_HOST=$REDIS_HOST:6379 --vpc-connector=$VA --service-account=$SA --cpu-throttling --source=.

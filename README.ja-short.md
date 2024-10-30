@@ -162,6 +162,12 @@ REDIS_HOST=$(gcloud redis instances describe test-redis --region=asia-northeast1
 SPANNER_STRING=projects/$GOOGLE_CLOUD_PROJECT/instances/test-instance/databases/game
 ```
 
+Cloud Build のサービスアカウントに権限を付与  
+これは、2024年に実施された [Cloud Build のサービスアカウントの扱いの変更](https://cloud.google.com/build/docs/cloud-build-service-account-updates?hl=ja) に対して、必要な作業です
+```
+make build-sa
+```
+
 #### ***オプション1***: ***buildpacks*** を利用
 Dockerfile なしで、コンテナを自動ビルド、Cloud Run にデプロイ  
 手順が少なく自動で最適化されたコンテナをデプロイできますが、オプション2に比べて、時間がかかります
