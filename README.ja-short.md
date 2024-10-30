@@ -100,7 +100,7 @@ Terraform の出力の dns_auth のエントリを適切なDNSサーバーに設
 
 ### 1. 必要な Google Cloud のサービスを有効化
 ```
-gcloud services enable private\
+gcloud services enable \
 spanner.googleapis.com \
 run.googleapis.com \
 cloudbuild.googleapis.com \
