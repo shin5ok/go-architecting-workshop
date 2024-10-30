@@ -47,15 +47,15 @@ git clone https://github.com/shin5ok/egg-architecting
 ---
 
 ## とにかく急いで構築したい人向け
-1. terraform を[インストール](https://developer.hashicorp.com/terraform/downloads)します
+### 1. terraform を[インストール](https://developer.hashicorp.com/terraform/downloads)します
 
-2. terraform の環境を初期化します
+### 2. terraform の環境を初期化します
 ```
 cd terraform/
 terraform init
 ```
 
-3. 環境変数をセット
+### 3. 環境変数をセット
 ご自分の環境に合わせて準備してください
 ```
 export TF_VAR_project=<Google Cloud のプロジェクトID, 例: my-project-xxxxxx>
@@ -65,33 +65,34 @@ export TF_VAR_region=asia-northeast1
 export TF_VAR_zone=asia-northeast1-a
 ```
 
-3. 実行
+### 4. 実行
 自分がリポジトリのトップディレクトリにいることを確認して実行します  
 （Makefile と同じディレクトリです）
 
-- 念のため、環境をクリーンアップ
+#### 念のため、環境をクリーンアップ
 ```
 make clean
 unset SPANNER_EMULATOR_HOST
 ```
-- Google Cloud の環境とアプリケーションをデプロイします  
+#### Google Cloud の環境とアプリケーションをデプロイします  
 
-インフラの構築
+- インフラの構築
 ```
 make all
 ```
 Terraform による出力が確認できます
 
-アプリのデプロイ
+- アプリのデプロイ
 ```
 make app
 ```
 
 以上、完了です  
+
 [こちら](#7-おめでとう)まで移動して、テストしましょう
 
 >[!NOTE]
-テストは Cloud Run の組み込み URLで行う想定ですが、適切に DNS を設定すれば Certificate anager による SSLの証明書が発行され、指定した FQDN でアクセス可能となります  
+テストは Cloud Run の組み込み URLで行う想定ですが、適切に DNS を設定すれば Certificate anager による SSLの証明書が発行され、指定した FQDN でアクセスできます  
 Terraform の出力の dns_auth のエントリを適切なDNSサーバーに設定してください（Cloud DNSで[設定する例](https://cloud.google.com/certificate-manager/docs/dns-authorizations?hl=ja#cname-record))
 
 
@@ -171,7 +172,7 @@ REDIS_HOST=$(gcloud redis instances describe test-redis --region=asia-northeast1
 SPANNER_STRING=projects/$GOOGLE_CLOUD_PROJECT/instances/test-instance/databases/game
 ```
 
-Cloud Build のサービスアカウントに権限を付与  
+#### Cloud Build のサービスアカウントに権限を付与  
 これは、2024年に実施された [Cloud Build のサービスアカウントの扱いの変更](https://cloud.google.com/build/docs/cloud-build-service-account-updates?hl=ja) に対して、必要な作業です
 ```
 make build-sa
