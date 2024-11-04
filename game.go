@@ -78,15 +78,17 @@ func NewClient(ctx context.Context, dbString string, c Cacher) (dbClient, error)
 // create a user
 func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) error {
 
-	ctx, span := otel.Tracer("main").Start(ctx, "CreateUser")
-	defer span.End()
+	ctx, mainSpan := otel.Tracer("main").Start(ctx, "CreateUser")
+	defer mainSpan.End()
 
 	if err := validate.Struct(u); err != nil {
 		return err
 	}
 
+	ctx, txSpan := otel.Tracer("main").Start(ctx, "DML in transaction")
+
 	_, err := d.Sc.ReadWriteTransactionWithOptions(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
-		ctx, span = otel.Tracer("main").Start(ctx, "PreparingStatement")
+		ctx, preparedSpan := otel.Tracer("main").Start(ctx, "PreparingStatement")
 		sqlToUsers := `INSERT users (user_id, name, created_at, updated_at)
 		  VALUES (@userID, @userName, @timestamp, @timestamp)`
 		t := time.Now().Format("2006-01-02 15:04:05")
@@ -99,17 +101,19 @@ func (d dbClient) CreateUser(ctx context.Context, w io.Writer, u UserParams) err
 			SQL:    sqlToUsers,
 			Params: params,
 		}
-		span.End()
+		preparedSpan.End()
 
-		ctx, span = otel.Tracer("main").Start(ctx, "UpdateRecord")
+		ctx, UpdateSpan := otel.Tracer("main").Start(ctx, "UpdateRecord")
 		_, err := txn.UpdateWithOptions(ctx, stmtToUsers, spanner.QueryOptions{RequestTag: "func=CreateUser,env=dev,action=insert"})
-		span.End()
+		UpdateSpan.End()
 		if err != nil {
 			return err
 		}
 
 		return nil
 	}, spanner.TransactionOptions{TransactionTag: "func=CreateUser,env=dev"})
+
+	txSpan.End()
 
 	return err
 }
@@ -120,8 +124,8 @@ additionally show example how to use span of trace
 */
 func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, i ItemParams) error {
 
-	ctx, span := otel.Tracer("main").Start(ctx, "AddItemUser")
-	defer span.End()
+	ctx, mainSpan := otel.Tracer("main").Start(ctx, "AddItemUser")
+	defer mainSpan.End()
 
 	if err := validate.Struct(u); err != nil {
 		return err
@@ -155,10 +159,10 @@ func (d dbClient) AddItemToUser(ctx context.Context, w io.Writer, u UserParams, 
 // get items the user has
 func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]map[string]interface{}, error) {
 
-	ctx, span := otel.Tracer("main").Start(ctx, "GetCache")
+	ctx, mainSpan := otel.Tracer("main").Start(ctx, "GetCache")
 	key := fmt.Sprintf("UserItems_%s", userID)
 	data, err := d.Cache.Get(key)
-	span.End()
+	mainSpan.End()
 
 	if err != nil {
 		log.Println(key, "Error", err)
@@ -186,12 +190,12 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 		},
 	}
 
-	ctx, span = otel.Tracer("main").Start(ctx, "txnQuery")
+	ctx, querySpan := otel.Tracer("main").Start(ctx, "txnQuery")
 	iter := txn.QueryWithOptions(ctx, stmt, spanner.QueryOptions{RequestTag: "func=UserItems,env=dev,action=query"})
 	defer iter.Stop()
-	span.End()
+	querySpan.End()
 
-	ctx, span = otel.Tracer("main").Start(ctx, "readResults")
+	ctx, getResultsSpan := otel.Tracer("main").Start(ctx, "readResults")
 
 	baseItemSliceCap := 100
 
@@ -219,9 +223,9 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 			})
 
 	}
-	span.End()
+	getResultsSpan.End()
 
-	_, span = otel.Tracer("main").Start(ctx, "setResults")
+	_, setResultsSpan := otel.Tracer("main").Start(ctx, "setResults")
 	jsonedResults, err := json.Marshal(results)
 	if err != nil {
 		return results, err
@@ -230,7 +234,7 @@ func (d dbClient) UserItems(ctx context.Context, w io.Writer, userID string) ([]
 	if err != nil {
 		log.Println(err)
 	}
-	span.End()
+	setResultsSpan.End()
 
 	return results, nil
 }
