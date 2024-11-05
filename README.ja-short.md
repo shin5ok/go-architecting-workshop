@@ -42,7 +42,7 @@ export PATH=$PATH:~/go/bin
 
 ### 5. リポジトリをローカルへ clone
 ```
-git clone https://github.com/shin5ok/egg-architecting
+git clone <このリポジトリのURL>
 ```
 ---
 
@@ -117,6 +117,8 @@ gcloud iam service-accounts create game-api
 ```
 export SA=game-api@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com
 gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$SA --role=roles/spanner.databaseUser
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$SA --role=roles/cloudtrace.agent
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$SA --role=roles/cloudprofiler.agent
 ```
 ### 3. Redis を設置するための VPC を構築
 ```
