@@ -141,8 +141,20 @@ resource "google_service_account" "run_sa" {
   account_id = "game-api"
 }
 
-resource "google_project_iam_member" "binding_run_sa" {
+resource "google_project_iam_member" "binding_run_sa_spanner" {
   role    = "roles/spanner.databaseUser"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
+  project = var.project
+}
+
+resource "google_project_iam_member" "binding_run_sa_profiler" {
+  role    = "roles/cloudprofiler.agent"
+  member  = "serviceAccount:${google_service_account.run_sa.email}"
+  project = var.project
+}
+
+resource "google_project_iam_member" "binding_run_sa_trace" {
+  role    = "roles/cloudtrace.agent"
   member  = "serviceAccount:${google_service_account.run_sa.email}"
   project = var.project
 }
