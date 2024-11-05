@@ -36,19 +36,19 @@ CLOUDBUILD_SA:=$(shell gcloud builds get-default-service-account | grep gservice
 build-sa:
 	@echo "Grant some authorizations to the service account for Cloud Build"
 
-	gcloud projects add-iam-policy-binding $(PROJECT_ID) \
+	gcloud projects add-iam-policy-binding $(GOOGLE_CLOUD_PROJECT) \
 	--member=serviceAccount:$(CLOUDBUILD_SA) \
 	--role=roles/artifactregistry.repoAdmin
 
-	gcloud projects add-iam-policy-binding $(PROJECT_ID) \
+	gcloud projects add-iam-policy-binding $(GOOGLE_CLOUD_PROJECT) \
 	--member=serviceAccount:$(CLOUDBUILD_SA) \
 	--role=roles/cloudbuild.builds.builder
 
-	gcloud projects add-iam-policy-binding $(PROJECT_ID) \
+	gcloud projects add-iam-policy-binding $(GOOGLE_CLOUD_PROJECT) \
 	--member=serviceAccount:$(CLOUDBUILD_SA) \
 	--role=roles/run.admin
 
-	gcloud projects add-iam-policy-binding $(PROJECT_ID) \
+	gcloud projects add-iam-policy-binding $(GOOGLE_CLOUD_PROJECT) \
 	--member=serviceAccount:$(CLOUDBUILD_SA) \
 	--role=roles/storage.admin
 
