@@ -53,6 +53,7 @@ git clone <このリポジトリのURL>
 ```
 cd terraform/
 terraform init
+cd -
 ```
 
 ### 3. 環境変数をセット
