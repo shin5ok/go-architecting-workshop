@@ -33,7 +33,7 @@ repo:
 
 .PHONY: build-sa
 CLOUDBUILD_SA:=$(shell gcloud builds get-default-service-account | grep gserviceaccount | cut -d / -f 4)
-PROJECT_NUMBER:=$(shell gcloud projects describe $GOOGLE_CLOUD_PROJECT --format=json | jq -r .projectNumber)
+PROJECT_NUMBER:=$(shell gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format=json | jq -r .projectNumber)
 build-sa:
 	@echo "Grant some authorizations to the service account for Cloud Build"
 
